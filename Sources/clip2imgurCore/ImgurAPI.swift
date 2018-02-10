@@ -7,6 +7,7 @@
 
 import Foundation
 import Cocoa
+import Rainbow
 
 public class ImgurAPI{
     
@@ -99,9 +100,10 @@ public class ImgurAPI{
         task.waitUntilExit()
         
         while(true){
-            print("The new URL looks like https://imgur.com/?state=copy-url#access_token=...\n")
+            print("The new URL looks like " +
+                    "https://imgur.com/?state=copy-url#access_token=...\n".underline)
             print("(4) Paste the full URL below: ")
-            print("> ", terminator: "")
+            print("> ".bold.blink, terminator: "")
             response = readLine()
             
             if (response != nil && response!.hasPrefix("https://imgur.com")){
@@ -109,7 +111,7 @@ public class ImgurAPI{
                     break
                 }
             }
-            print("\nMake sure you copy the full URL\n")
+            printError("\nMake sure you copy the full URL\n")
         }
     }
     
@@ -134,7 +136,7 @@ public class ImgurAPI{
     }
     
     // Post image to Imgur, image should be a base64 encoded string
-    public func postImage(from image: String){
+    public func postImage(from image: String) -> String{
         if (!self.isAuthorized()){
             // A loop to get user input
             print("In order to upload image to your colloection, you need to authorize this app." +
@@ -142,7 +144,7 @@ public class ImgurAPI{
             var response: String?
             while(true) {
                 print("Enter 'yes' to start authorization, enter 'no' to post anonymously")
-                print("> ", terminator: "")
+                print("> ".bold.blink, terminator: "")
                 response = readLine()
                 let legalResponses = ["yes", "no", "\'yes\'", "\'no\'", "y", "n"]
                 if (response != nil && legalResponses.contains(response!)){
@@ -153,13 +155,13 @@ public class ImgurAPI{
             // Start authorization
             if (response! == "yes" || response! == "\'yes\'" || response! == "y"){
                 self.authorizeUser()
-                self.postImage(from: image, anony: false)
+                return self.postImage(from: image, anony: false)
             } else {
-                self.postImage(from: image, anony: true)
+                return self.postImage(from: image, anony: true)
             }
         } else {
             // The user has already been authorized
-            self.postImage(from: image, anony: false)
+            return self.postImage(from: image, anony: false)
         }
     }
     
@@ -250,11 +252,7 @@ public class ImgurAPI{
         dataTask.resume()
         sema.wait()
         
-        print("🎉 Successfully uploaded your screenshot at \(link!)")
-        let clipboard = NSPasteboard.general
-        clipboard.declareTypes([.string], owner: nil)
-        clipboard.setString(link!, forType: .string)
-        print("\n🐵 The url is coppied to your clipboard")
+        print("🎉 Successfully uploaded your screenshot to Imgur at \(link!.underline)")
         return link!
     }
 }

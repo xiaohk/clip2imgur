@@ -26,7 +26,7 @@ public func pasteClipboardImage() -> [NSImage]?{
     let board = NSPasteboard.general;
     
     guard board.canReadObject(forClasses: [NSImage.self], options: nil) else {
-        printError("There is no image file in the clipboard")
+        printError("There is no image file detected in your clipboard")
         exit(-1)
     }
     

@@ -1,5 +1,5 @@
 //
-//  Cli.swift
+//  CommandLineInterface.swift
 //  clip2imgur
 //
 //  Created by Jay Wong on 2/7/18.
@@ -7,6 +7,7 @@
 
 import Foundation
 import Cocoa
+import Rainbow
 
 // A class managing the commmand line interface for this project
 public class CommandLineInterface{
@@ -22,20 +23,21 @@ public class CommandLineInterface{
     public func run(){
         let cliImage = ClipboardImage()
         let api = ImgurAPI()
-        api.postImage(from: cliImage.getClipboardImageBase64())
-        // api.authorizeUser()
-        //print(api.parseURL("https://imgur.com/?state=copy-url#access_token=bb8f26b8a688671f436b91e666b7553a1b36ec4c&expires_in=315360000&token_type=bearer&refresh_token=6f79169408cd0206cd8ff17ba7f73472a59f03a3&account_username=xiaohk&account_id=33452659"))
+        let url = api.postImage(from: cliImage.getClipboardImageBase64())
+        copyToClipboard(from: url)
+        print("The image url is coppied to your clipboard.".bold)
     }
 }
 
 // Print the error message to stderr
 public func printError(_ errorMessage: String){
-    fputs("Error: \(errorMessage)\n", stderr)
+    fputs("Error: \(errorMessage)\n".red.bold, stderr)
 }
-/*
-public func run(){
-    if let url = URL(string: "https://www.google.com"), NSWorkspace.shared.open(url) {
-        print("default browser was successfully opened")
-    }
+
+// Copy the string to user's clipboard
+private func copyToClipboard(from str: String){
+    let clipboard = NSPasteboard.general
+    clipboard.declareTypes([.string], owner: nil)
+    clipboard.setString(str, forType: .string)
 }
-*/
+
