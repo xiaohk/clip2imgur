@@ -13,7 +13,6 @@ public class ImgurAPI{
     
     private let authoURL = URL(string: "https://api.imgur.com/oauth2/authorize?client_id=95b05e2e3ac5624&response_type=token&state=copy-url")
     private let uploadURL = URL(string: "https://api.imgur.com/3/image")
-    private let response = "https://imgur.com/?state=copy-url#access_token=bb8f26b8a688671f436b91e666b7553a1b36ec4c&expires_in=315360000&token_type=bearer&refresh_token=6f79169408cd0206cd8ff17ba7f73472a59f03a3&account_username=xiaohk&account_id=33452659"
     private let configPath: String
     private var configDict: [String: String]
     private let userKeys =  ["access_token", "refresh_token", "account_username",
@@ -156,83 +155,89 @@ public class ImgurAPI{
             if (response! == "yes" || response! == "\'yes\'" || response! == "y"){
                 self.authorizeUser()
             } else {
-                self.postImageAnonymously(from: image)
+                print(self.postImage(from: image)!)
             }
         }
     }
     
-    private func postImageAnonymously(from image: String){
-        let sema = DispatchSemaphore(value: 0)
-        
-        // Define the URLRequest
+    // Upload the base64 image to imgur
+    // Support two modes: authorized mode and anonymious mode, depending on the autho arg
+    private func postImage(from image: String, with autho: String? = nil) -> String?{
+        // Switch mode
+        let authoValue = autho==nil ? self.configDict["client_id"]! :
+                                      self.configDict["access_token"]!
+        // Parameters for header and body
         let headers = [
-            "Authorization": "Client-ID \(self.configDict["client_id"]!)",
-            "Content-Type": "application/x-www-form-urlencoded",
+            "content-type": "multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW",
+            "Authorization": "Client-ID \(authoValue)",
             "Cache-Control": "no-cache"
         ]
-        
-        let params = [
-            "image": image,
-            "type": "base64"
+        let parameters = [
+            ["name": "image", "value": image],
+            ["name": "type", "value": "base64"]
         ]
         
-        let postData = NSMutableData(data: "image=\(image)".data(using: String.Encoding.utf8)!)
-        postData.append("&type=base64".data(using: String.Encoding.utf8)!)
+        // Build Postman format multipart body
+        let boundary = "----WebKitFormBoundary7MA4YWxkTrZu0gW"
+        var body = ""
+        let error: NSError? = nil
+        for param in parameters {
+            let paramName = param["name"]!
+            body += "--\(boundary)\r\n"
+            body += "Content-Disposition:form-data; name=\"\(paramName)\""
+            if let filename = param["fileName"] {
+                let contentType = param["content-type"]!
+                let fileContent = try! String(contentsOfFile: filename, encoding: String.Encoding.utf8)
+                if (error != nil) {
+                    printError(error!.localizedDescription)
+                }
+                body += "; filename=\"\(filename)\"\r\n"
+                body += "Content-Type: \(contentType)\r\n\r\n"
+                body += fileContent
+            } else if let paramValue = param["value"] {
+                body += "\r\n\r\n\(paramValue)"
+            }
+        }
         
+        // Build request using header and body
         let request = NSMutableURLRequest(url: self.uploadURL!,
                                           cachePolicy: .useProtocolCachePolicy,
                                           timeoutInterval: 10.0)
         request.httpMethod = "POST"
         request.allHTTPHeaderFields = headers
-        request.httpBody = postData as Data
+        request.httpBody = body.data(using: .utf8, allowLossyConversion: false)
         
-        // Upload task
-        let task = URLSession.shared.dataTask(with: request as URLRequest) {
-            data, response, error in
-            if let error = error {
-                print ("error: \(error)")
-                return
-            }
-            if let httpStatus = response as? HTTPURLResponse, httpStatus.statusCode != 200 {
-                print("statusCode should be 200, but is \(httpStatus.statusCode)")
-                print("response = \(response!)")
-            }
-            sema.signal()
-        }
-        task.resume()
-        // Block the main thread, wait for the URLSession
-        sema.wait()
-    }
-    
-    
-    private func postImageAnony(from image: String){
-        let header: HTTPHeaders = ["Authorization": "Client-ID \(self.configDict["client_id"]!)"]
-        let sema = DispatchSemaphore( value: 0)
-        Alamofire.request(self.uploadURL!, method: .post,
-                          parameters: ["image": image, "type": "base64"],
-                          encoding: JSONEncoding.default,
-                          headers: header).responseJSON {
-            response in
-                            
-            switch response.result {
-            case .success:
-                print(response)
-                sema.signal()
-                break
-            case .failure(let error):
-                print(error)
+        // Semaphore to wait for the dispatch
+        let sema = DispatchSemaphore(value: 0)
+        var link: String?
+        
+        let dataTask = URLSession.shared.dataTask(
+            with: request as URLRequest,
+            completionHandler: { (data, response, error) -> Void in
+                if (error != nil) {
+                    printError(error!.localizedDescription)
+                } else {
+                    let httpResponse = response as? HTTPURLResponse
+                    if (httpResponse?.statusCode != 200){
+                        printError("Fail to upload image with code" +
+                            "\(String(describing: httpResponse?.statusCode))")
+                    }
+                    do {
+                        let json = try JSONSerialization.jsonObject(with: data!,
+                                options: .allowFragments) as! [String:Any]
+                        let json_data = json["data"] as! [String: Any]
+                        link = json_data["link"] as? String
+                    } catch let error as NSError {
+                        printError(error.localizedDescription)
+                    }
+                }
                 sema.signal()
             }
-        }
+        )
+        // Start the task and wait for it to complete
+        dataTask.resume()
         sema.wait()
-    }
-}
-
-
-extension String {
-    func addingPercentEncodingForURLQueryValue() -> String? {
-        let allowedCharacters = CharacterSet(charactersIn: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._~")
-        return self.addingPercentEncoding(withAllowedCharacters: allowedCharacters)
+        return link
     }
 }
 
