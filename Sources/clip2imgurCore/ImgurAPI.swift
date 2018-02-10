@@ -7,6 +7,7 @@
 
 import Foundation
 import Cocoa
+import Alamofire
 
 public class ImgurAPI{
     
@@ -161,20 +162,33 @@ public class ImgurAPI{
     }
     
     private func postImageAnonymously(from image: String){
-        // Anonimous upload
         let sema = DispatchSemaphore(value: 0)
-        print("what?!")
-        var request = URLRequest(url: self.uploadURL!)
+        
+        // Define the URLRequest
+        let headers = [
+            "Authorization": "Client-ID \(self.configDict["client_id"]!)",
+            "Content-Type": "application/x-www-form-urlencoded",
+            "Cache-Control": "no-cache"
+        ]
+        
+        let params = [
+            "image": image,
+            "type": "base64"
+        ]
+        
+        let postData = NSMutableData(data: "image=\(image)".data(using: String.Encoding.utf8)!)
+        postData.append("&type=base64".data(using: String.Encoding.utf8)!)
+        
+        let request = NSMutableURLRequest(url: self.uploadURL!,
+                                          cachePolicy: .useProtocolCachePolicy,
+                                          timeoutInterval: 10.0)
         request.httpMethod = "POST"
-        request.setValue("Client-ID " + self.configDict["client_id"]!,
-            forHTTPHeaderField: "Authorization")
-        let data = "image=\(image)&type=base64".data(using: .utf8, allowLossyConversion: false)
-        request.httpBody = data
+        request.allHTTPHeaderFields = headers
+        request.httpBody = postData as Data
         
         // Upload task
-        let task = URLSession.shared.dataTask(with: request) {
+        let task = URLSession.shared.dataTask(with: request as URLRequest) {
             data, response, error in
-            print("Responeded!!")
             if let error = error {
                 print ("error: \(error)")
                 return
@@ -190,27 +204,35 @@ public class ImgurAPI{
         sema.wait()
     }
     
-    /*
+    
     private func postImageAnony(from image: String){
         let header: HTTPHeaders = ["Authorization": "Client-ID \(self.configDict["client_id"]!)"]
-        
+        let sema = DispatchSemaphore( value: 0)
         Alamofire.request(self.uploadURL!, method: .post,
                           parameters: ["image": image, "type": "base64"],
                           encoding: JSONEncoding.default,
                           headers: header).responseJSON {
             response in
+                            
             switch response.result {
             case .success:
                 print(response)
-                
+                sema.signal()
                 break
             case .failure(let error):
-                
                 print(error)
+                sema.signal()
             }
         }
+        sema.wait()
     }
- */
 }
 
+
+extension String {
+    func addingPercentEncodingForURLQueryValue() -> String? {
+        let allowedCharacters = CharacterSet(charactersIn: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._~")
+        return self.addingPercentEncoding(withAllowedCharacters: allowedCharacters)
+    }
+}
 

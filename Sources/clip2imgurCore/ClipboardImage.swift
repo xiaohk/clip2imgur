@@ -8,7 +8,6 @@
 import Foundation
 import AppKit
 
-
 public class ClipboardImage{
     private let images = pasteClipboardImage()!
     
