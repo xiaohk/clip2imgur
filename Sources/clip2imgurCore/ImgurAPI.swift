@@ -7,7 +7,6 @@
 
 import Foundation
 import Cocoa
-import Alamofire
 
 public class ImgurAPI{
     
@@ -89,8 +88,8 @@ public class ImgurAPI{
             try NSWorkspace.shared.launchApplication(at: defaultBrowerURL!,
                                                      options: .andHideOthers,
                                                      configuration: [:])
-        } catch {
-            printError("Failed to launch the browser.")
+        } catch let error as NSError{
+            printError("Failed to launch the browser with error: \(error.localizedDescription)")
         }
         
         // Clear the terminal screen
@@ -101,16 +100,16 @@ public class ImgurAPI{
         
         while(true){
             print("The new URL looks like https://imgur.com/?state=copy-url#access_token=...\n")
-            print("(4) Paste the full URL here > ", terminator: "")
+            print("(4) Paste the full URL below: ")
+            print("> ", terminator: "")
             response = readLine()
-            if (response != nil && response!.hasPrefix("https://imgur.com?")){
+            
+            if (response != nil && response!.hasPrefix("https://imgur.com")){
                 if (parseURL(response!)){
                     break
                 }
             }
             print("\nMake sure you copy the full URL\n")
-            // TODO
-            break
         }
     }
     
@@ -154,22 +153,27 @@ public class ImgurAPI{
             // Start authorization
             if (response! == "yes" || response! == "\'yes\'" || response! == "y"){
                 self.authorizeUser()
+                self.postImage(from: image, anony: false)
             } else {
-                print(self.postImage(from: image)!)
+                self.postImage(from: image, anony: true)
             }
+        } else {
+            // The user has already been authorized
+            self.postImage(from: image, anony: false)
         }
     }
     
     // Upload the base64 image to imgur
     // Support two modes: authorized mode and anonymious mode, depending on the autho arg
-    private func postImage(from image: String, with autho: String? = nil) -> String?{
+    @discardableResult
+    private func postImage(from image: String, anony: Bool = false) -> String{
         // Switch mode
-        let authoValue = autho==nil ? self.configDict["client_id"]! :
-                                      self.configDict["access_token"]!
+        let authoValue = anony ? "Client-ID " + self.configDict["client_id"]! :
+                                 "Bearer " + self.configDict["access_token"]!
         // Parameters for header and body
         let headers = [
             "content-type": "multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW",
-            "Authorization": "Client-ID \(authoValue)",
+            "Authorization": authoValue,
             "Cache-Control": "no-cache"
         ]
         let parameters = [
@@ -219,16 +223,24 @@ public class ImgurAPI{
                 } else {
                     let httpResponse = response as? HTTPURLResponse
                     if (httpResponse?.statusCode != 200){
-                        printError("Fail to upload image with code" +
+                        printError("Failed to upload image with code" +
                             "\(String(describing: httpResponse?.statusCode))")
+                        exit(-1)
                     }
                     do {
+                        // Parse the response as json and fetch the interesting info
                         let json = try JSONSerialization.jsonObject(with: data!,
                                 options: .allowFragments) as! [String:Any]
                         let json_data = json["data"] as! [String: Any]
+                        
                         link = json_data["link"] as? String
+                        if (link == nil){
+                            printError("Failed to fetch link")
+                            exit(-1)
+                        }
                     } catch let error as NSError {
                         printError(error.localizedDescription)
+                        exit(-1)
                     }
                 }
                 sema.signal()
@@ -237,7 +249,13 @@ public class ImgurAPI{
         // Start the task and wait for it to complete
         dataTask.resume()
         sema.wait()
-        return link
+        
+        print("🎉 Successfully uploaded your screenshot at \(link!)")
+        let clipboard = NSPasteboard.general
+        clipboard.declareTypes([.string], owner: nil)
+        clipboard.setString(link!, forType: .string)
+        print("\n🐵 The url is coppied to your clipboard")
+        return link!
     }
 }
 

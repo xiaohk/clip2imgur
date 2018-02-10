@@ -53,8 +53,9 @@ extension NSImage{
         do {
             try imageData.write(to: url)
             return true
-        } catch {
-            print("Failed to write to rwrite the PNG file")
+        } catch let error as NSError{
+            print("Failed to write to rwrite the PNG file, with error:" +
+                    "\(error.localizedDescription)")
             exit(-1)
         }
     }
