@@ -9,14 +9,22 @@ import Foundation
 import Cocoa
 import Rainbow
 
-public class ImgurAPI{
+// Define a protocol to hide refreshToken implementation
+@objc protocol Imgurable{
+    @objc func postImage(from image: String, anony: Bool) -> String
+    @objc func authorizeUser()
+    // Use optional to build with/without refreshToken function
+    @objc optional func refreshToken()
+}
+
+public class ImgurAPI: Imgurable{
     
     private let authoURL = URL(string: "https://api.imgur.com/oauth2/authorize?client_id=95b05e2e3ac5624&response_type=token&state=copy-url")
     private let uploadURL = URL(string: "https://api.imgur.com/3/image")
     private let configPath: String
-    private var configDict: [String: String]
+    internal var configDict: [String: String]
     private let userKeys =  ["access_token", "refresh_token", "account_username",
-                             "account_id", "expires_in"]
+                             "account_id", "expires_in", "expire_date"]
     private let fm = FileManager()
     
     init(){
@@ -42,7 +50,7 @@ public class ImgurAPI{
     }
     
     // Write the config dictionary to the plist
-    private func writeConfigDict(){
+    internal func writeConfigDict(){
         let plistData = try! PropertyListSerialization.data(
             fromPropertyList: self.configDict,
             format: .xml, options: 0)
@@ -115,8 +123,8 @@ public class ImgurAPI{
         }
     }
     
-    // Parse the response URL into the dictionary
-    public func parseURL(_ response: String) -> Bool{
+    // Parse the response URL into a dictionary
+    private func parseURL(_ response: String) -> Bool{
         // Seperate the response
         let poundIndex = response.index(response.index(of: "#")!, offsetBy: 1)
         let pairs = response[poundIndex..<response.endIndex].components(separatedBy: "&")
@@ -125,9 +133,13 @@ public class ImgurAPI{
         for pair in pairs{
             let item = pair.components(separatedBy: "=")
             self.configDict[item[0]] = item[1]
+            // Compute the expire date from expires_in entry
+            if (item[0] == "expires_in"){
+                self.storeExpireDateTime(from: item[1])
+            }
         }
         
-        // Dump the configDict to plist
+        // Dump the configDict to the plist
         if (self.isAuthorized()){
             self.writeConfigDict()
             return true
@@ -135,40 +147,10 @@ public class ImgurAPI{
         return false
     }
     
-    // Post image to Imgur, image should be a base64 encoded string
-    public func postImage(from image: String) -> String{
-        if (!self.isAuthorized()){
-            // A loop to get user input
-            print("In order to upload image to your colloection, you need to authorize this app." +
-                " Do you want to authorize now?")
-            var response: String?
-            while(true) {
-                print("Enter 'yes' to start authorization, enter 'no' to post anonymously")
-                print("> ".bold.blink, terminator: "")
-                response = readLine()
-                let legalResponses = ["yes", "no", "\'yes\'", "\'no\'", "y", "n"]
-                if (response != nil && legalResponses.contains(response!)){
-                    break
-                }
-            }
-            
-            // Start authorization
-            if (response! == "yes" || response! == "\'yes\'" || response! == "y"){
-                self.authorizeUser()
-                return self.postImage(from: image, anony: false)
-            } else {
-                return self.postImage(from: image, anony: true)
-            }
-        } else {
-            // The user has already been authorized
-            return self.postImage(from: image, anony: false)
-        }
-    }
-    
     // Upload the base64 image to imgur
     // Support two modes: authorized mode and anonymious mode, depending on the autho arg
     @discardableResult
-    private func postImage(from image: String, anony: Bool = false) -> String{
+    public func postImage(from image: String, anony: Bool = false) -> String{
         // Switch mode
         let authoValue = anony ? "Client-ID " + self.configDict["client_id"]! :
                                  "Bearer " + self.configDict["access_token"]!
@@ -252,8 +234,34 @@ public class ImgurAPI{
         dataTask.resume()
         sema.wait()
         
-        print("🎉 Successfully uploaded your screenshot to Imgur at \(link!.underline)")
+        print("\n🎉 Successfully uploaded your screenshot to Imgur at \(link!.underline)\n")
         return link!
+    }
+    
+    // Store the access_token expire time to the config dictionary
+    internal func storeExpireDateTime(from expire: String){
+        // Give 2 minutes offset to offset the reandom compile time offset
+        let expireOffset = 120
+        guard let expireInterval: TimeInterval = Double(expire) else{
+            print("Failed to convert expire time to TimeInterval")
+            exit(-1)
+        }
+        let expireDate = Date().timeIntervalSinceReferenceDate +
+            expireInterval - Double(expireOffset)
+        self.configDict["expire_date"] = String(expireDate)
+    }
+    
+    // Check whether the stored access token is expired
+    internal func isExpire() -> Bool{
+        if (!self.isAuthorized()){
+            printError("Attempted to access expire date when the user is not authorized")
+            exit(-1)
+        }
+        
+        let currentDateTime = Date()
+        let expireDateTime = Date(timeIntervalSinceReferenceDate:
+            Double(self.configDict["expire_date"]!)!)
+        return currentDateTime > expireDateTime
     }
 }
 
