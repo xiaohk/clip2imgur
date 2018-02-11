@@ -81,11 +81,15 @@ public class ImgurAPI: Imgurable{
         // Prompt the user how to authorize
         print("\nTo use this app, we need your authorization. Please follow the instruction" +
             " to authorize:\n")
-        print("(1) You will be directed to Imgur authorization page in your default browser.")
-        print("(2) Authorize this app.")
-        print("(3) After authorization, you will be redirected to the Imgur main page, " +
-            "please copy the new URL from your browser.\n")
-        print("Press [return ⏎] key to start step (1) \r\n", terminator: "")
+        print(
+        """
+         (1) You will be directed to Imgur authorization page in your default browser.
+         (2) Authorize this app.
+         (3) After authorization, you will be redirected to the Imgur main page, please copy the new URL from your browser.\n
+         """.blue.bold
+        )
+
+        print("Press [return ⏎ ] key to start step (1) \r\n", terminator: "")
         var response = readLine()
         
         // Open the authorization page in default browser
@@ -110,8 +114,8 @@ public class ImgurAPI: Imgurable{
         while(true){
             print("The new URL looks like " +
                     "https://imgur.com/?state=copy-url#access_token=...\n".underline)
-            print("(4) Paste the full URL below: ")
-            print("> ".bold.blink, terminator: "")
+            print("(4) Paste the full URL below: ".blue.bold)
+            print("> ".blink, terminator: "")
             response = readLine()
             
             if (response != nil && response!.hasPrefix("https://imgur.com")){
@@ -264,4 +268,3 @@ public class ImgurAPI: Imgurable{
         return currentDateTime > expireDateTime
     }
 }
-

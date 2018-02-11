@@ -25,7 +25,7 @@ public class CommandLineInterface{
         let cliImage = ClipboardImage()
         let url = self.postImage(from: cliImage.getClipboardImageBase64())
         copyToClipboard(from: url)
-        print("The image url is coppied to your clipboard.".bold)
+        print("The image url is coppied to your clipboard.".blue.bold)
     }
     
     // Post image to Imgur, image should be a base64 encoded string
@@ -37,8 +37,8 @@ public class CommandLineInterface{
                 "Do you want to authorize this app now?\n")
             var response: String?
             while(true) {
-                print("Enter 'yes' to start authorization, enter 'no' to post anonymously")
-                print("> ".bold.blink, terminator: "")
+                print("[Enter 'yes' to start authorization, enter 'no' to post anonymously]")
+                print("> ".blink, terminator: "")
                 response = readLine()
                 let legalResponses = ["yes", "no", "\'yes\'", "\'no\'", "y", "n"]
                 if (response != nil && legalResponses.contains(response!)){
@@ -81,4 +81,3 @@ private func copyToClipboard(from str: String){
     clipboard.declareTypes([.string], owner: nil)
     clipboard.setString(str, forType: .string)
 }
-

@@ -2,5 +2,5 @@
 /.build
 /Packages
 /*.xcodeproj
-./Sources/clip2imgurCore/RefreshToken.swift
+RefreshToken.swift
 Package.resolved
