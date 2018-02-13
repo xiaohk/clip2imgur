@@ -115,7 +115,7 @@ public class ImgurAPI: Imgurable{
             print("The new URL looks like " +
                     "https://imgur.com/?state=copy-url#access_token=...\n".underline)
             print("(4) Paste the full URL below: ".blue.bold)
-            print("> ".blink, terminator: "")
+            print("> ".bold, terminator: "")
             response = readLine()
             
             if (response != nil && response!.hasPrefix("https://imgur.com")){
@@ -223,7 +223,7 @@ public class ImgurAPI: Imgurable{
                         
                         link = json_data["link"] as? String
                         if (link == nil){
-                            printError("Failed to fetch link")
+                            printError("Failed to fetch the link")
                             exit(-1)
                         }
                     } catch let error as NSError {
@@ -236,8 +236,8 @@ public class ImgurAPI: Imgurable{
         )
         // Start the task and wait for it to complete
         dataTask.resume()
+        print("Uploading...")
         sema.wait()
-        
         print("\n🎉 Successfully uploaded your screenshot to Imgur at \(link!.underline)\n")
         return link!
     }
