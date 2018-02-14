@@ -4,7 +4,7 @@
 <a href="https://swift.org/package-manager/"><img src="https://img.shields.io/badge/SPM-ready-red.svg"></a>
 
 ## Usage
-<img src="./demo.gif", height=250, align="right">
+<img src="./demo.gif" height=250  align="right">
 Press <kbd>control+shift+command+3</kbd> or <kbd>control+shift+command+4</kbd> to capture and copy a screenshot. Run `imgur2clip` in your terminal, then boom, the image URL is in your clipboard.
 
 
@@ -13,7 +13,7 @@ If it is your first time to run `imgur2clip`, you can choose to authorize this t
 
 In default setting, the URL of posted image will be copied to your clipboard. You can use flags to configure it. 
 
-```bash
+```
 $ clip2imgur --html
 $ clip2imgur -n
 ```
@@ -33,13 +33,13 @@ This package is built using cross-platform Swift with Swift Package Manager (SPM
 ### Homebrew
 Using `Homebrew` is the recommended and also the easiest way to get `clip2imgur` installed on your mac. If you don't have `Homebrew` installed, you can simply run:
 
-```bash
+```
 $ /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
 ```
 
 Then, to install `clip2imgur`:
 
-```bash
+```
 $ brew tap xiaohk/clip2imgur
 $ brew install clip2imgur
 ```
@@ -49,7 +49,7 @@ You also can download the pre-compiled binary from the [Latest Rease](https://gi
 
 For example, the following commands download `clip2imgur` to `~/clip2imgur/clip2imgur` and add a symbolic link. 
 
-```bash
+```
 $ mkdir ~/clip2imgur
 $ curl -o ~/clip2imgur/clip2imgur.zip https://github.com/xiaohk/clip2imgur/releases/download/v0.8/clip2imgur-0.8.0.zip
 $ unzip ~/clip2imgur/clip2imgur.zip & rm ~/clip2imgur/clip2imgur.zip 
@@ -61,7 +61,7 @@ This approach is not recommended, because I didn't open source a function to ref
 
 To build `clip2imgur`, you need macOS 10.10 or later and Swift 3.0 or above.
 
-```bash
+```
 $ cd clip2imgur
 $ swift build -c release -Xswiftc -static-stdlib
 $ ln -s $(pwd)/.build/release/clip2imgur /usr/local/bin/clip2imgur
