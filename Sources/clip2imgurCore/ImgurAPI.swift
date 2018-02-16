@@ -18,17 +18,21 @@ import Rainbow
 }
 
 public class ImgurAPI: Imgurable{
-    
     private let authoURL = URL(string: "https://api.imgur.com/oauth2/authorize?client_id=95b05e2e3ac5624&response_type=token&state=copy-url")
     private let uploadURL = URL(string: "https://api.imgur.com/3/image")
     private let configPath: String
+    private let configDirectURL: URL
     internal var configDict: [String: String]
     private let userKeys =  ["access_token", "refresh_token", "account_username",
                              "account_id", "expires_in", "expire_date"]
     private let fm = FileManager()
     
     init(){
-        self.configPath = Bundle.main.bundleURL.appendingPathComponent("config.plist").path
+        self.configDirectURL = URL(fileURLWithPath:
+            NSHomeDirectory()).appendingPathComponent(".clip2imgur")
+        self.configPath = self.configDirectURL.appendingPathComponent("config.plist").path
+
+        // Init the config data
         if (self.fm.fileExists(atPath: self.configPath)){
             // If file exist, we just read it
             self.configDict = NSDictionary(contentsOfFile: self.configPath) as!
@@ -39,7 +43,14 @@ public class ImgurAPI: Imgurable{
             let plistData = try! PropertyListSerialization.data(
                 fromPropertyList: self.configDict,
                 format: .xml, options: 0)
-            self.fm.createFile(atPath: self.configPath, contents: plistData)
+            do{
+                try self.fm.createDirectory(at: self.configDirectURL,
+                                            withIntermediateDirectories: true)
+                self.fm.createFile(atPath: self.configPath, contents: plistData)
+            } catch let error {
+                printError("Failed to create config files with error:" +
+                    "\(error.localizedDescription)")
+            }
         }
     }
     

@@ -127,7 +127,7 @@ public class CommandLineInterface{
 
 // Print the error message to stderr
 public func printError(_ errorMessage: String){
-    fputs("Error: \(errorMessage)\n".red.bold, stderr)
+    fputs("Error: \(errorMessage)\n".red, stderr)
 }
 
 // Copy the url to user's clipboard
