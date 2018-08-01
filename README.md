@@ -9,9 +9,9 @@
 
 - Press <kbd>control+shift+command+3</kbd> or <kbd>control+shift+command+4</kbd> to capture and copy a screenshot. 
 
-- Run `imgur2clip` in your terminal, then boom, the image URL is in your clipboard.
+- Run `clip2imgur` in your terminal, then boom, the image URL is in your clipboard.
 
-- If it is your first time to run `imgur2clip`, you can choose to authorize this tool, and your image will be posted in your image collection (`username.imgur.com/all`). 
+- If it is your first time to run `clip2imgur`, you can choose to authorize this tool, and your image will be posted in your image collection (`username.imgur.com/all`). 
 
 - You also can choose to post anonymously, but it is hard to get the url later and Imgur might delete your posts.
 
