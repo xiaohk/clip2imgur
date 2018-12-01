@@ -1,8 +1,11 @@
-# clip2imgur
+
+# clip2imgur <img src="./icon.png" height=40 vertical-align=bottom>
+
 > A simple macOS command line tool for uploading your screenshots from clipboard to Imgur
 
 [![Build Status](https://travis-ci.org/xiaohk/clip2imgur.svg?branch=master)](https://travis-ci.org/xiaohk/clip2imgur)
 <a href="https://swift.org/package-manager/"><img src="https://img.shields.io/badge/SPM-ready-red.svg"></a>
+
 
 ## Usage
 <img src="./demo.gif" height=250  align="right">
