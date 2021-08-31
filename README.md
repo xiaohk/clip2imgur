@@ -5,6 +5,8 @@
 
 [![Build Status](https://travis-ci.org/xiaohk/clip2imgur.svg?branch=master)](https://travis-ci.org/xiaohk/clip2imgur)
 <a href="https://swift.org/package-manager/"><img src="https://img.shields.io/badge/SPM-ready-red.svg"></a>
+[![License](https://img.shields.io/badge/License-MIT-yellowgreen)](https://github.com/xiaohk/clip2imgur/blob/master/LICENSE)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.5348350.svg)](https://doi.org/10.5281/zenodo.5348350)
 
 
 ## Usage
