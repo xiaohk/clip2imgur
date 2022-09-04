@@ -10,17 +10,17 @@
 
 
 ## Usage
-<img src="./demo.gif" height=250  align="right">
+<img src="./demo.gif" width=500 style="margin-left:50px"  align="right">
 
-- Press <kbd>control+shift+command+3</kbd> or <kbd>control+shift+command+4</kbd> to capture and copy a screenshot. 
+- Press <kbd>control+shift+command+3</kbd> or <kbd>control+shift+command+4</kbd> to capture and copy a screenshot.
 
 - Run `clip2imgur` in your terminal, then boom, the image URL is in your clipboard.
 
-- If it is your first time to run `clip2imgur`, you can choose to authorize this tool, and your image will be posted in your image collection (`username.imgur.com/all`). 
+- If it is your first time to run `clip2imgur`, you can choose to authorize this tool, and your image will be posted in your image collection (`username.imgur.com/all`).
 
 - You also can choose to post anonymously, but it is hard to get the url later and Imgur might delete your posts.
 
-In default setting, the URL of posted image will be copied to your clipboard. You can use flags to configure it. 
+In default setting, the URL of posted image will be copied to your clipboard. You can use flags to configure it.
 
 ```
 $ clip2imgur --html
