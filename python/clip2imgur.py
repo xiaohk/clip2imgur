@@ -30,6 +30,22 @@ class Clip2imgur:
                 print("Authorization is expired. Please authorize again.")
                 self.auth_user()
 
+    def post_clipboard_image(self):
+        image_data = self.get_clipboard_image()
+        if image_data is None:
+            print(
+                "No image file detected in your clipboard \n\n"
+                + "You can use [⌘ ⌃ ⇧ 4] or [⌘ ⌃ ⇧ 3] to capture a screenshot and "
+                + "copy it to your clipboard."
+            )
+            return
+
+        print("Uploading...")
+        link = self.post_image(image_data)
+        print(f"\n🎉 Successfully uploaded your screenshot to Imgur at ${link}\n")
+
+        # Post processing with the link
+
     def get_clipboard_image(self) -> Optional[bytes]:
         """
         Get the image from the clipboard.
