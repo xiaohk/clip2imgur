@@ -7,10 +7,110 @@ import AppKit
 import requests
 import base64
 import webbrowser
+import argparse
+import pyperclip
 
 CLIENT_ID = "dd530a37627eee4"
 CONFIG_DIR = os.path.expanduser("~/.config/clip2imgur")
 AUTH_FILE = os.path.join(CONFIG_DIR, "auth.json")
+
+
+class Clip2imgurApp:
+    """CLI wrapper for Clip2imgur."""
+
+    def __init__(self):
+        self.clip2imgur = Clip2imgur()
+
+        # Initialize the argument parser and register flags
+        description = (
+            "clip2imgur is a simple CLI that uploads your image in"
+            + "clipboard to Imgur."
+        )
+        self.parser = argparse.ArgumentParser(description=description)
+        self.parser.add_argument(
+            "-m",
+            "--markdown",
+            action="store_true",
+            help="Copy the image URL in Markdown format",
+        )
+        self.parser.add_argument(
+            "-t",
+            "--html",
+            action="store_true",
+            help="Copy the image URL in HTML format",
+        )
+        self.parser.add_argument(
+            "-n",
+            "--nocopy",
+            action="store_true",
+            help="Do not copy the image URL after submitting",
+        )
+
+    def run(self):
+        """The app's main logic"""
+
+        # Parse the arguments
+        args = self.parser.parse_args()
+
+        # Post the user's image
+        url = self.post_image()
+
+        # Transform the url
+        if url is not None:
+            if args.nocopy:
+                return
+
+            elif args.html:
+                self.copy_url_to_clipboard(url, "html")
+
+            elif args.markdown:
+                self.copy_url_to_clipboard(url, "markdown")
+
+            else:
+                self.copy_url_to_clipboard(url)
+
+            print("The image url is copied to your clipboard.")
+
+    def post_image(self):
+        """Post the image from the clipboard to Imgur. Ask the user to authorize
+        if they have not done so.
+        """
+        ok_responses = set(["yes", "'yes'", "y", ""])
+        no_responses = set(["no", "'no'", "n"])
+
+        if self.clip2imgur.auth_values is None:
+            print(
+                "In order to upload image to your collection, you need to "
+                + "authorize this app. Otherwise, you will be posting your "
+                + "image anonymously. Do you want to authorize this app now?\n"
+            )
+            response = ""
+            while True:
+                print(
+                    "[Enter 'yes' to start authorization, enter 'no' to post anonymously]"
+                )
+                response = input("> (yes)")
+
+                if response in ok_responses:
+                    self.clip2imgur.auth_user()
+                    return self.clip2imgur.post_clipboard_image()
+                elif response in no_responses:
+                    return self.clip2imgur.post_clipboard_image()
+        else:
+            return self.clip2imgur.post_clipboard_image()
+
+    def copy_url_to_clipboard(self, url: str, using_format="plain"):
+        """
+        Copy the url to the clipboard.
+        """
+        formatted_url = url
+
+        if using_format == "html":
+            formatted_url = f'<img src="{url}">'
+        elif using_format == "markdown":
+            formatted_url = f"![]({url})"
+
+        pyperclip.copy(formatted_url)
 
 
 class Clip2imgur:
@@ -26,11 +126,16 @@ class Clip2imgur:
 
             # Need to re-authenticate if the token is expired
             now = int(time())
-            if now > self.auth_values["time"] + self.auth_values["expires_in"]:
+            if now > int(self.auth_values["time"]) + int(
+                self.auth_values["expires_in"]
+            ):
                 print("Authorization is expired. Please authorize again.")
                 self.auth_user()
 
     def post_clipboard_image(self):
+        """
+        Uploads an image from the clipboard to Imgur.
+        """
         image_data = self.get_clipboard_image()
         if image_data is None:
             print(
@@ -43,8 +148,7 @@ class Clip2imgur:
         print("Uploading...")
         link = self.post_image(image_data)
         print(f"\n🎉 Successfully uploaded your screenshot to Imgur at ${link}\n")
-
-        # Post processing with the link
+        return link
 
     def get_clipboard_image(self) -> Optional[bytes]:
         """
@@ -125,7 +229,7 @@ class Clip2imgur:
             values[parts[0]] = parts[1]
 
         # Add a current time to the config
-        values["time"] = int(time())
+        values["time"] = str(int(time()))
 
         return values
 
@@ -176,3 +280,19 @@ class Clip2imgur:
         self.auth_values = values
 
         dump(values, open(AUTH_FILE, "w", encoding="utf8"))
+
+    def auth_is_expired(self):
+        """
+        Check if the authorization is expired.
+        """
+        if self.auth_values is None:
+            return
+
+        return int(time()) < int(self.auth_values.time) + int(
+            self.auth_values.expires_in
+        )
+
+
+if __name__ == "__main__":
+    cli = Clip2imgurApp()
+    cli.run()
