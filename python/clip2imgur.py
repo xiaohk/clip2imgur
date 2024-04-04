@@ -147,7 +147,7 @@ class Clip2imgur:
 
         print("Uploading...")
         link = self.post_image(image_data)
-        print(f"\n🎉 Successfully uploaded your screenshot to Imgur at ${link}\n")
+        print(f"\n🎉 Successfully uploaded your screenshot to Imgur at {link}\n")
         return link
 
     def get_clipboard_image(self) -> Optional[bytes]:
