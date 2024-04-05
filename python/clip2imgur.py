@@ -43,7 +43,13 @@ class Clip2imgurApp:
             "-n",
             "--nocopy",
             action="store_true",
-            help="Do not copy the image URL after submitting",
+            help="Do not copy the image URL after posting",
+        )
+        self.parser.add_argument(
+            "-a",
+            "--anon",
+            action="store_true",
+            help="Post the image anonymously",
         )
 
     def run(self):
@@ -51,9 +57,13 @@ class Clip2imgurApp:
 
         # Parse the arguments
         args = self.parser.parse_args()
+        is_anon = False
+
+        if args.anon:
+            is_anon = True
 
         # Post the user's image
-        url = self.post_image()
+        url = self.post_image(is_anon)
 
         # Transform the url
         if url is not None:
@@ -71,8 +81,9 @@ class Clip2imgurApp:
 
             print("The image url is copied to your clipboard.")
 
-    def post_image(self):
-        """Post the image from the clipboard to Imgur. Ask the user to authorize
+    def post_image(self, is_anon):
+        """
+        Post the image from the clipboard to Imgur. Ask the user to authorize
         if they have not done so.
         """
         ok_responses = set(["yes", "'yes'", "y", ""])
@@ -93,11 +104,11 @@ class Clip2imgurApp:
 
                 if response in ok_responses:
                     self.clip2imgur.auth_user()
-                    return self.clip2imgur.post_clipboard_image()
+                    return self.clip2imgur.post_clipboard_image(is_anon=is_anon)
                 elif response in no_responses:
-                    return self.clip2imgur.post_clipboard_image()
+                    return self.clip2imgur.post_clipboard_image(is_anon=is_anon)
         else:
-            return self.clip2imgur.post_clipboard_image()
+            return self.clip2imgur.post_clipboard_image(is_anon=is_anon)
 
     def copy_url_to_clipboard(self, url: str, using_format="plain"):
         """
@@ -132,9 +143,17 @@ class Clip2imgur:
                 print("Authorization is expired. Please authorize again.")
                 self.auth_user()
 
-    def post_clipboard_image(self):
+    def post_clipboard_image(self, is_anon=False):
         """
         Uploads an image from the clipboard to Imgur.
+
+        Parameters:
+            is_anon (bool): If True, the image will be uploaded anonymously.
+                If False, the image will be associated with your Imgur account.
+
+        Returns:
+            str: The link to the uploaded image on Imgur.
+
         """
         image_data = self.get_clipboard_image()
         if image_data is None:
@@ -146,7 +165,7 @@ class Clip2imgur:
             return
 
         print("Uploading...")
-        link = self.post_image(image_data)
+        link = self.post_image(image_data, is_anon=is_anon)
         print(f"\n🎉 Successfully uploaded your screenshot to Imgur at {link}\n")
         return link
 
@@ -171,12 +190,14 @@ class Clip2imgur:
         data = raw_data.bytes().tobytes()
         return data
 
-    def post_image(self, image_data: bytes) -> str:
+    def post_image(self, image_data: bytes, is_anon=False) -> str:
         """
         Posts an image to Imgur using the provided image data.
 
         Args:
             image_data (bytes): The image data to be uploaded.
+            is_anon (bool): If True, the image will be uploaded anonymously.
+                If False, the image will be associated with your Imgur account.
 
         Returns:
             str: The URL of the uploaded image.
@@ -190,7 +211,7 @@ class Clip2imgur:
         # Build the requests
         auth_value = f"Client-ID {CLIENT_ID}"
 
-        if self.auth_values and self.auth_values["access_token"]:
+        if not is_anon and self.auth_values and self.auth_values["access_token"]:
             auth_value = f'Bearer {self.auth_values["access_token"]}'
 
         headers = {"Authorization": auth_value, "Cache-Control": "no-cache"}
