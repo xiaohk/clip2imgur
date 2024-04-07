@@ -1,6 +1,7 @@
 from typing import Optional
 from json import load, dump
 from time import time
+from rich.console import Console
 
 import os
 import AppKit
@@ -13,6 +14,7 @@ import pyperclip
 CLIENT_ID = "dd530a37627eee4"
 CONFIG_DIR = os.path.expanduser("~/.config/clip2imgur")
 AUTH_FILE = os.path.join(CONFIG_DIR, "auth.json")
+console = Console()
 
 
 class Clip2imgurApp:
@@ -79,7 +81,9 @@ class Clip2imgurApp:
             else:
                 self.copy_url_to_clipboard(url)
 
-            print("The image url is copied to your clipboard.")
+            console.print(
+                "The image url is copied to your clipboard.", style="blue bold"
+            )
 
     def post_image(self, is_anon):
         """
@@ -90,14 +94,14 @@ class Clip2imgurApp:
         no_responses = set(["no", "'no'", "n"])
 
         if self.clip2imgur.auth_values is None:
-            print(
+            console.print(
                 "In order to upload image to your collection, you need to "
                 + "authorize this app. Otherwise, you will be posting your "
                 + "image anonymously. Do you want to authorize this app now?\n"
             )
             response = ""
             while True:
-                print(
+                console.print(
                     "[Enter 'yes' to start authorization, enter 'no' to post anonymously]"
                 )
                 response = input("> (yes)")
@@ -140,7 +144,10 @@ class Clip2imgur:
             if now > int(self.auth_values["time"]) + int(
                 self.auth_values["expires_in"]
             ):
-                print("Authorization is expired. Please authorize again.")
+                console.print(
+                    "Authorization is expired. Please authorize again.",
+                    style="bold red",
+                )
                 self.auth_user()
 
     def post_clipboard_image(self, is_anon=False):
@@ -157,16 +164,19 @@ class Clip2imgur:
         """
         image_data = self.get_clipboard_image()
         if image_data is None:
-            print(
+            console.print(
                 "No image file detected in your clipboard \n\n"
                 + "You can use [⌘ ⌃ ⇧ 4] or [⌘ ⌃ ⇧ 3] to capture a screenshot and "
-                + "copy it to your clipboard."
+                + "copy it to your clipboard.",
+                style="bold red",
             )
             return
 
-        print("Uploading...")
+        console.print("Uploading...")
         link = self.post_image(image_data, is_anon=is_anon)
-        print(f"\n🎉 Successfully uploaded your screenshot to Imgur at {link}\n")
+        console.print(
+            f"\n🎉 Successfully uploaded your screenshot to Imgur at [link]{link}[/link]\n"
+        )
         return link
 
     def get_clipboard_image(self) -> Optional[bytes]:
@@ -264,16 +274,16 @@ class Clip2imgur:
 
         auth_url = f"https://api.imgur.com/oauth2/authorize?client_id={CLIENT_ID}&response_type=token&state=copy-url"
 
-        print(
+        console.print(
             "\nTo use this app, we need your authorization. Please follow the instruction"
             + " to authorize Clip2imgur:\n"
         )
-        print(
+        console.print(
             "\t(1) You will be directed to Imgur authorization page in your default browser.\n"
             + "\t(2) Log in and authorize this app.\n"
             + "\t(3) After authorization, you will be redirected to the Imgur main page, please copy the new URL from your browser.\n"
         )
-        print("Press [return ⏎ ] key to start step (1) \r\n")
+        console.print("Press [return ⏎ ] key to start step (1) \r\n")
         input()
 
         webbrowser.open(auth_url)
@@ -283,7 +293,7 @@ class Clip2imgur:
         values = {}
 
         while True:
-            print(
+            console.print(
                 "The new URL looks like https://imgur.com/?state=copy-url#access_token=...\n"
             )
             response = input("(4) Paste the full URL below:\n> ")
@@ -292,7 +302,7 @@ class Clip2imgur:
                 values = self.parse_user_url(response)
                 if values:
                     break
-            print("\nMake sure you copy the full URL\n")
+            console.print("\nMake sure you copy the full URL\n", style="bold red")
 
         # Save the user auth into a local config file
         if not os.path.exists(CONFIG_DIR):
