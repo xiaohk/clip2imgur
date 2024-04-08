@@ -7,3 +7,4 @@ Package.resolved
 .swift-version
 .swiftpm
 notebooks
+__pycache__
