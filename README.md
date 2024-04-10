@@ -38,6 +38,7 @@ $ clip2imgur -n
 | `-m`  | `--markdown` | URL will be copied in the Markdown image format.`[](https://i.imgur.com/x.png)`     |
 | `-t`  | `--html`     | URL will be copied in the HTML image format.`<img src="https://i.imgur.com/x.png">` |
 | `-n`  | `--notcopy`  | Your image URL will not be copied to your clipboard                                 |
+| `-a`  | `--anon`     | Post the image anonymously                                                          |
 
 Personally I like to include images in Markdown file using the HTML format,
 which gives more control of the display. If you forget these flags, you always
