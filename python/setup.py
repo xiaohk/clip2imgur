@@ -47,6 +47,6 @@ setup(
     test_suite="tests",
     tests_require=test_requirements,
     url="https://github.com/xiaohk/clip2imgur",
-    version="0.1.1",
+    version="0.9.1",
     zip_safe=False,
 )
