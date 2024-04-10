@@ -43,6 +43,11 @@ Personally I like to include images in Markdown file using the HTML format,
 which gives more control of the display. If you forget these flags, you always
 can run `clip2imgur -h` to check the usage.
 
+## Change Log
+
+- (4/9/2024): Clip2imgur is rewritten in Python.
+- (2/15/2018): Clip2imgur is released. This version is written in Swift.
+
 ## Install
 
 This package is built using cross-platform Swift with Swift Package Manager
@@ -66,40 +71,19 @@ $ brew tap xiaohk/clip2imgur
 $ brew install clip2imgur
 ```
 
-### Download the Binary
+### PyPI
 
-You can download the pre-compiled binary from the
-[Latest Rease](https://github.com/xiaohk/clip2imgur/releases/latest). After
-extract the binary, you want to create a symbolic link in `/usr/local/bin` to
-launch `clip2imgur` in your terminal more quickly.
+If you are familiar with Python, you can install `clip2imgur` with pip.
 
 ```
-$ mkdir ~/clip2imgur && cd ~/clip2imgur
-$ curl -O https://github.com/xiaohk/clip2imgur/releases/download/v0.9/clip2imgur-0.9.0.tar.gz
-$ tar -xvzf clip2imgur-0.9.0.tar.gz
-$ ln -s ~/clip2imgur/clip2imgur /usr/local/bin/clip2imgur
+$ pip install clip2imgur
 ```
-
-### Build from Source
-
-This approach is not recommended, because a function used to refresh your
-authorization is not open sourced for security reasons. Your compiled version
-works fine, but may require you to re-authorize `clip2imgur` periodically. If
-you only want to post images anonymously, then it doesn't really matter.
-
-To build `clip2imgur`, you need macOS 10.10 or later and Swift 3.0 or above.
-
-```
-$ git clone https://github.com/xiaohk/clip2imgur.git
-$ cd clip2imgur
-$ swift build -c release -Xswiftc -static-stdlib
-$ ln -s $(pwd)/.build/release/clip2imgur /usr/local/bin/clip2imgur
-```
-
-`clip2imgur` also has a by-product framework `clip2imgurCore` in `./build`.
-There might be some handy functions to use in your own projects.
 
 ## Built With
+
+The latest version (>=v0.9.1) uses Python.
+
+The first version (v0.9.0) was built with:
 
 - [Swift Package Manager](https://swift.org/package-manager/)
 - [Rainbow](https://github.com/onevcat/Rainbow)
