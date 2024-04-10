@@ -49,4 +49,9 @@ setup(
     url="https://github.com/xiaohk/clip2imgur",
     version="0.9.1",
     zip_safe=False,
+    entry_points={
+        "console_scripts": [
+            "clip2imgur=clip2imgur.clip2imgur:main",
+        ],
+    },
 )

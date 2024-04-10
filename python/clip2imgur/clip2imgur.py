@@ -324,6 +324,10 @@ class Clip2imgur:
         )
 
 
+def main():
+    app = Clip2imgurApp()
+    app.run()
+
+
 if __name__ == "__main__":
-    cli = Clip2imgurApp()
-    cli.run()
+    main()

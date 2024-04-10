@@ -8,3 +8,5 @@ Package.resolved
 .swiftpm
 notebooks
 __pycache__
+dist
+*.egg-info
