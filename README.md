@@ -1,11 +1,11 @@
-# clip2imgur <img src="./icon.png" height=40 vertical-align=bottom>
+<h1>clip2imgur <img src="./icon.png" height="36" align="right"></h1>
 
 > A simple macOS command line tool for uploading your screenshots from clipboard
 > to Imgur
 
-[![Build Status](https://travis-ci.org/xiaohk/clip2imgur.svg?branch=master)](https://travis-ci.org/xiaohk/clip2imgur)
-<a href="https://swift.org/package-manager/"><img src="https://img.shields.io/badge/SPM-ready-red.svg"></a>
+[![Github Actions Status](https://github.com/xiaohk/clip2imgur/workflows/build/badge.svg)](https://github.com/xiaohk/clip2imgur/actions/workflows/build.yml)
 [![License](https://img.shields.io/badge/License-MIT-yellowgreen)](https://github.com/xiaohk/clip2imgur/blob/master/LICENSE)
+[![pypi](https://img.shields.io/pypi/v/clip2imgur?color=blue)](https://pypi.python.org/pypi/clip2imgur)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.5348350.svg)](https://doi.org/10.5281/zenodo.5348350)
 
 ## Usage
