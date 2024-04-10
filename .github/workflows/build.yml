@@ -8,7 +8,7 @@ on:
     branches: [master]
   #: Run the test every week
   schedule:
-    - cron: '0 12 * * 1'
+    - cron: '0 12 1 * *'
 
 jobs:
   build:
