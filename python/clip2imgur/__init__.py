@@ -2,6 +2,6 @@
 
 __author__ = """Jay Wang"""
 __email__ = "jayw@zijie.wang"
-__version__ = "0.9.3"
+__version__ = "0.9.4"
 
 from clip2imgur.clip2imgur import *
