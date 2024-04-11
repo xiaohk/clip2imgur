@@ -9,7 +9,7 @@ from pathlib import Path
 with open("README.md") as readme_file:
     readme = readme_file.read()
 
-requirements = ["pyobjc-framework-Cocoa", "pyperclip", "rich"]
+requirements = ["pyobjc-framework-Cocoa", "pyperclip", "rich", "requests"]
 
 test_requirements = []
 
